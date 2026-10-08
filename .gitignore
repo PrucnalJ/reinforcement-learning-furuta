@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Course materials are not redistributed
+*.pdf
+*.zip
+
+# Large generated artifacts
+*.npz.tmp
