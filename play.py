@@ -29,9 +29,14 @@ class PendulumView:
     """The two-panel pendulum drawing, shared by the game, watch.py and
     the live view in train.py."""
 
-    def __init__(self, title="Furuta swing-up", header="") -> None:
-        self.fig, (self.ax_side, self.ax_top) = plt.subplots(1, 2, figsize=(10, 5))
-        self.fig.canvas.manager.set_window_title(title)
+    def __init__(self, title="Furuta swing-up", header="", axes=None,
+                 text_y=0.04) -> None:
+        if axes is None:
+            self.fig, (self.ax_side, self.ax_top) = plt.subplots(1, 2, figsize=(10, 5))
+            self.fig.canvas.manager.set_window_title(title)
+        else:  # draw into axes supplied by another window (playground.py)
+            self.ax_side, self.ax_top = axes
+            self.fig = self.ax_side.figure
 
         # Side view: the pendulum angle. Up is theta = 0.
         ax = self.ax_side
@@ -60,7 +65,7 @@ class PendulumView:
         (self.arm_line,) = ax.plot([], [], lw=4, color="tab:blue")
         ax.plot([0], [0], "ko")
 
-        self.text = self.fig.text(0.5, 0.04, "", ha="center", family="monospace")
+        self.text = self.fig.text(0.5, text_y, "", ha="center", family="monospace")
         self.header = self.fig.text(0.5, 0.98, header, ha="center", va="top")
 
     def draw(self, phi: float, theta: float, text: str) -> None:
