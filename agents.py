@@ -131,7 +131,7 @@ def run_greedy_episode(agent: TabularAgent, env, discretize,
     """Evaluation (required work item 4): Q frozen, no exploration, no updates."""
     state, _ = env.reset()
     total, steps = 0.0, 0
-    thetas = [] if record else None
+    thetas, states, holds, returns = [], [], [], []
     while True:
         a = agent.greedy(discretize(state), rng)   # reads Q, never writes it
         state, r, terminated, truncated, info = env.step(a)
@@ -139,8 +139,14 @@ def run_greedy_episode(agent: TabularAgent, env, discretize,
         steps += 1
         if record:
             thetas.append(info["theta_wrapped"])
+            states.append(state)
+            holds.append(info["hold_counter"])
+            returns.append(total)
         if terminated or truncated:
             out = {"return": total, "steps": steps, **info}
             if record:
                 out["theta_trace"] = np.array(thetas)
+                out["state_trace"] = np.array(states)
+                out["hold_trace"] = np.array(holds)
+                out["return_trace"] = np.array(returns)
             return out

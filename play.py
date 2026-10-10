@@ -25,23 +25,13 @@ STEPS_PER_FRAME = 3          # 3 x 10 ms per 30 ms frame = roughly real time
 FRAME_INTERVAL_MS = 30
 
 
-class Game:
-    """policy=None: you press the keys.  policy=f(state)->action: f plays."""
+class PendulumView:
+    """The two-panel pendulum drawing, shared by the game, watch.py and
+    the live view in train.py."""
 
-    def __init__(self, policy=None, title="Furuta swing-up", auto_restart=False,
-                 seed=None) -> None:
-        self.env = SwingUpEnv(seed=seed)
-        self.policy = policy
-        self.auto_restart = auto_restart
-        self.keys = set()
-        self.episode = 0
-        self.pause_frames = 0
-        self.reset()
-
+    def __init__(self, title="Furuta swing-up", header="") -> None:
         self.fig, (self.ax_side, self.ax_top) = plt.subplots(1, 2, figsize=(10, 5))
         self.fig.canvas.manager.set_window_title(title)
-        self.fig.canvas.mpl_connect("key_press_event", self.on_press)
-        self.fig.canvas.mpl_connect("key_release_event", self.on_release)
 
         # Side view: the pendulum angle. Up is theta = 0.
         ax = self.ax_side
@@ -71,9 +61,51 @@ class Game:
         ax.plot([0], [0], "ko")
 
         self.text = self.fig.text(0.5, 0.04, "", ha="center", family="monospace")
+        self.header = self.fig.text(0.5, 0.98, header, ha="center", va="top")
+
+    def draw(self, phi: float, theta: float, text: str) -> None:
+        # Side view: theta = 0 points up, theta = pi points down.
+        x, y = np.sin(theta), np.cos(theta)
+        self.pend_line.set_data([0, x], [0, y])
+        self.pend_bob.set_data([x], [y])
+        # Top view: phi = 0 points up the screen.
+        self.arm_line.set_data([0, np.sin(phi)], [0, np.cos(phi)])
+        self.text.set_text(text)
+
+
+STATUS = {
+    "running": "",
+    "success": "SUCCESS! 5 s upright.",
+    "unsafe": "FAILED: arm or speed limit hit.",
+    "time_limit": "Time up.",
+}
+
+
+def status_line(steps, hold, phi, total, dt=0.01) -> str:
+    return (f"time {steps * dt:5.2f} s   upright hold {hold * dt:4.2f}/5.00 s   "
+            f"arm {np.rad2deg(phi):+6.0f} deg   return {total:8.1f}")
+
+
+class Game:
+    """policy=None: you press the keys.  policy=f(state)->action: f plays."""
+
+    def __init__(self, policy=None, title="Furuta swing-up", auto_restart=False,
+                 seed=None) -> None:
+        self.env = SwingUpEnv(seed=seed)
+        self.policy = policy
+        self.auto_restart = auto_restart
+        self.keys = set()
+        self.episode = 0
+        self.pause_frames = 0
+        self.reset()
+
         controls = ("<- / ->  push arm     r  reset     q  quit" if policy is None
                     else "agent is playing     r  reset     q  quit")
-        self.fig.text(0.5, 0.95, controls, ha="center")
+        self.view = PendulumView(title, controls)
+        self.fig = self.view.fig
+        self.text = self.view.text
+        self.fig.canvas.mpl_connect("key_press_event", self.on_press)
+        self.fig.canvas.mpl_connect("key_release_event", self.on_release)
 
         self.anim = FuncAnimation(self.fig, self.update,
                                   interval=FRAME_INTERVAL_MS,
@@ -121,27 +153,16 @@ class Game:
                 self.reset()
 
         phi, _, theta, _ = self.state
-        # Side view: theta = 0 points up, theta = pi points down.
-        x, y = np.sin(theta), np.cos(theta)
-        self.pend_line.set_data([0, x], [0, y])
-        self.pend_bob.set_data([x], [y])
-        # Top view: phi = 0 points up the screen.
-        self.arm_line.set_data([0, np.sin(phi)], [0, np.cos(phi)])
-
-        status = {
-            "running": "",
-            "success": "SUCCESS! 5 s upright.  Press r to play again.",
-            "unsafe": "FAILED: arm or speed limit hit.  Press r.",
-            "time_limit": "Time up.  Press r.",
-        }[self.outcome]
-        self.text.set_text(
-            f"episode {self.episode}   "
-            f"time {self.env.steps * self.env.cfg.dt:5.2f} s   "
-            f"upright hold {self.env.hold_counter * self.env.cfg.dt:4.2f}/5.00 s   "
-            f"arm {np.rad2deg(phi):+6.0f} deg   return {self.total_reward:8.1f}\n"
-            f"{status}"
-        )
-        return self.pend_line, self.pend_bob, self.arm_line, self.text
+        status = STATUS[self.outcome]
+        if status and not self.auto_restart:
+            status += "  Press r to play again."
+        self.view.draw(phi, theta,
+                       f"episode {self.episode}   "
+                       + status_line(self.env.steps, self.env.hold_counter,
+                                     phi, self.total_reward, self.env.cfg.dt)
+                       + f"\n{status}")
+        v = self.view
+        return v.pend_line, v.pend_bob, v.arm_line, v.text
 
 
 if __name__ == "__main__":
