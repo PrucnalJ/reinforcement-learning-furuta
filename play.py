@@ -26,13 +26,20 @@ FRAME_INTERVAL_MS = 30
 
 
 class Game:
-    def __init__(self) -> None:
-        self.env = SwingUpEnv(seed=None)
+    """policy=None: you press the keys.  policy=f(state)->action: f plays."""
+
+    def __init__(self, policy=None, title="Furuta swing-up", auto_restart=False,
+                 seed=None) -> None:
+        self.env = SwingUpEnv(seed=seed)
+        self.policy = policy
+        self.auto_restart = auto_restart
         self.keys = set()
+        self.episode = 0
+        self.pause_frames = 0
         self.reset()
 
         self.fig, (self.ax_side, self.ax_top) = plt.subplots(1, 2, figsize=(10, 5))
-        self.fig.canvas.manager.set_window_title("Furuta swing-up")
+        self.fig.canvas.manager.set_window_title(title)
         self.fig.canvas.mpl_connect("key_press_event", self.on_press)
         self.fig.canvas.mpl_connect("key_release_event", self.on_release)
 
@@ -64,8 +71,9 @@ class Game:
         ax.plot([0], [0], "ko")
 
         self.text = self.fig.text(0.5, 0.04, "", ha="center", family="monospace")
-        self.fig.text(0.5, 0.95, "<- / ->  push arm     r  reset     q  quit",
-                      ha="center")
+        controls = ("<- / ->  push arm     r  reset     q  quit" if policy is None
+                    else "agent is playing     r  reset     q  quit")
+        self.fig.text(0.5, 0.95, controls, ha="center")
 
         self.anim = FuncAnimation(self.fig, self.update,
                                   interval=FRAME_INTERVAL_MS,
@@ -75,6 +83,7 @@ class Game:
         self.state, _ = self.env.reset()
         self.total_reward = 0.0
         self.outcome = "running"
+        self.episode += 1
 
     def on_press(self, event) -> None:
         if event.key == "r":
@@ -88,6 +97,8 @@ class Game:
         self.keys.discard(event.key)
 
     def action(self) -> int:
+        if self.policy is not None:
+            return self.policy(self.state)
         if "left" in self.keys and "right" not in self.keys:
             return 0
         if "right" in self.keys and "left" not in self.keys:
@@ -102,7 +113,12 @@ class Game:
                 self.total_reward += r
                 if term or trunc:
                     self.outcome = info["outcome"]
+                    self.pause_frames = 40   # hold the final frame ~1 s
                     break
+        elif self.auto_restart:
+            self.pause_frames -= 1
+            if self.pause_frames <= 0:
+                self.reset()
 
         phi, _, theta, _ = self.state
         # Side view: theta = 0 points up, theta = pi points down.
@@ -119,6 +135,7 @@ class Game:
             "time_limit": "Time up.  Press r.",
         }[self.outcome]
         self.text.set_text(
+            f"episode {self.episode}   "
             f"time {self.env.steps * self.env.cfg.dt:5.2f} s   "
             f"upright hold {self.env.hold_counter * self.env.cfg.dt:4.2f}/5.00 s   "
             f"arm {np.rad2deg(phi):+6.0f} deg   return {self.total_reward:8.1f}\n"
