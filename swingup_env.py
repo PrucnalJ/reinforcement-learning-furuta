@@ -24,14 +24,17 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, Optional, Tuple
 
+import math
+
 import numpy as np
 
+from fast_furuta import FastFurutaEnv
 from furuta_env import FurutaEnv
 
 
 def wrap_to_pi(angle: float) -> float:
     """Map an angle to [-pi, pi), so upright is 0 and downward is +-pi."""
-    return float((angle + np.pi) % (2.0 * np.pi) - np.pi)
+    return (angle + math.pi) % (2.0 * math.pi) - math.pi
 
 
 @dataclass
@@ -53,6 +56,7 @@ class SwingUpConfig:
     success_bonus: float = 100.0
     unsafe_penalty: float = -100.0
     process_noise_std: float = 0.0
+    fast: bool = True  # same equations, scalar math (see fast_furuta.py)
 
 
 class SwingUpEnv:
@@ -64,7 +68,8 @@ class SwingUpEnv:
         # The supplied environment's own termination is disabled here
         # (angle_limit = inf, arm limit = inf, very long horizon); this
         # wrapper decides when an episode ends.
-        self.env = FurutaEnv(
+        plant = FastFurutaEnv if self.cfg.fast else FurutaEnv
+        self.env = plant(
             dt=self.cfg.dt,
             max_steps=10**9,
             torque_values=self.cfg.torque_values,
@@ -123,7 +128,7 @@ class SwingUpEnv:
         terminated = success or unsafe
         truncated = (not terminated) and self.steps >= c.max_steps
 
-        reward = np.cos(theta_w) - c.lambda_phi * phi**2 - c.lambda_u * torque**2
+        reward = math.cos(theta_w) - c.lambda_phi * phi**2 - c.lambda_u * torque**2
         if success:
             reward += c.success_bonus
         if unsafe:

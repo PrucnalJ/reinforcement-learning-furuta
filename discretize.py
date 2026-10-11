@@ -12,6 +12,7 @@ coarser near the bottom (swing-up only needs the rough phase of the swing).
 
 from __future__ import annotations
 
+from bisect import bisect_right
 from dataclasses import dataclass, field
 from typing import Tuple
 
@@ -57,15 +58,27 @@ class Discretizer:
 
     def __init__(self, bins: BinConfig | None = None) -> None:
         self.bins = bins or BinConfig()
+        # Fast path for __call__: plain lists + bisect give the same answer
+        # as np.digitize (bisect_right == digitize for increasing edges)
+        # without numpy's per-call overhead.  run_tests() checks they agree.
+        self._edges = [list(map(float, e)) for e in self.bins.edges]
+        shape = self.bins.shape
+        self._strides = (shape[1] * shape[2] * shape[3], shape[2] * shape[3], shape[3], 1)
 
     def indices(self, state: np.ndarray) -> Tuple[int, int, int, int]:
         phi, phi_dot, theta, theta_dot = np.asarray(state, dtype=float)
         wrapped = np.array([phi, phi_dot, wrap_to_pi(theta), theta_dot])
         return discretize_state(wrapped, self.bins.edges)  # supplied helper
 
-    def __call__(self, state: np.ndarray) -> int:
+    def __call__(self, state) -> int:
         """Single integer row index into a Q table of n_states rows."""
-        return int(np.ravel_multi_index(self.indices(state), self.bins.shape))
+        phi, phi_dot, theta, theta_dot = state
+        e = self._edges
+        s = self._strides
+        return (bisect_right(e[0], phi) * s[0]
+                + bisect_right(e[1], phi_dot) * s[1]
+                + bisect_right(e[2], wrap_to_pi(theta)) * s[2]
+                + bisect_right(e[3], theta_dot))
 
     @property
     def n_states(self) -> int:
@@ -110,6 +123,16 @@ def run_tests() -> None:
     # Every row is reachable and the mapping is one-to-one on bin tuples.
     rows = {int(np.ravel_multi_index(t, shape)) for t in np.ndindex(*shape)}
     assert rows == set(range(d.n_states))
+    # Fast path agrees with the supplied np.digitize helper on random states.
+    rng = np.random.default_rng(0)
+    for _ in range(20000):
+        state = rng.normal(0, 1, 4) * [2.0, 6.0, 8.0, 10.0]
+        assert d(state) == int(np.ravel_multi_index(d.indices(state), shape))
+    for k, edges in enumerate(d.bins.edges):
+        for v in edges:
+            state = np.zeros(4); state[k] = v
+            assert d(state) == int(np.ravel_multi_index(d.indices(state), shape))
+    print("  fast path matches supplied discretize_state helper")
     print("  all tests passed")
 
 
