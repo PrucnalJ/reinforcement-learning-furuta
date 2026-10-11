@@ -119,7 +119,7 @@ def fig_comparison():
     fig, axes = plt.subplots(1, 2, figsize=(11, 3.8), sharey=True)
     for ax, m in zip(axes, ("qlearning", "sarsa")):
         band(ax, runs("baseline", m), "first_upright", "tab:blue",
-             "fine arm bins (baseline, 8 bins)", lambda x: (x >= 0).astype(float))
+             "fine arm bins (baseline, 10 bins)", lambda x: (x >= 0).astype(float))
         band(ax, runs("coarsephi", m), "first_upright", "tab:red",
              "coarse arm bins (6 bins)", lambda x: (x >= 0).astype(float))
         ax.set_title(f"{NAMES[m]}: fraction of episodes reaching upright", fontsize=10)
@@ -163,7 +163,7 @@ def fig_visits():
         "entries_visited_10plus": int(np.sum(counts >= 10)),
         "states_visited": int(np.count_nonzero(d["visits"].sum(1))),
         "share_of_updates_top_1pct_entries": float(np.sort(counts)[::-1][: counts.size // 100].sum() / counts.sum()),
-        "share_upright_region": float(v[:, :, 5:9, :].sum() / v.sum()),
+        "share_upright_region": float(v[:, :, 4:10, :].sum() / v.sum()),  # theta bins within +-20 deg
     }
 
 

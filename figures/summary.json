@@ -1,0 +1,406 @@
+{
+  "per_config": {
+    "Q-learning / baseline": {
+      "success_rate": [
+        0.0,
+        0.0
+      ],
+      "unsafe_rate": [
+        1.0,
+        0.0
+      ],
+      "time_limit_rate": [
+        0.0,
+        0.0
+      ],
+      "return_mean": [
+        -1421.1624866297923,
+        36.95845644468533
+      ],
+      "return_std": [
+        136.29213734698575,
+        57.88502154580227
+      ],
+      "never_reached_upright": [
+        18.666666666666668,
+        1.247219128924647
+      ],
+      "time_to_upright_mean_s": [
+        7.415,
+        0.3650000000000002
+      ],
+      "duration_mean_s": [
+        5.910333333333334,
+        0.9304264553896177
+      ],
+      "per_seed": [
+        {
+          "file": "results\\final\\baseline_qlearning_seed0.npz",
+          "method": "Q-learning",
+          "episodes": 20,
+          "eval_seeds": "100000..100019",
+          "success_rate": 0.0,
+          "unsafe_rate": 1.0,
+          "time_limit_rate": 0.0,
+          "return_mean": -1460.55791143452,
+          "return_std": 172.45284712616916,
+          "never_reached_upright": 19,
+          "time_to_upright_mean_s": 7.78,
+          "time_to_upright_std_s": null,
+          "duration_mean_s": 5.8614999999999995,
+          "duration_std_s": 2.850435377640627
+        },
+        {
+          "file": "results\\final\\baseline_qlearning_seed1.npz",
+          "method": "Q-learning",
+          "episodes": 20,
+          "eval_seeds": "100000..100019",
+          "success_rate": 0.0,
+          "unsafe_rate": 1.0,
+          "time_limit_rate": 0.0,
+          "return_mean": -1431.2119023661548,
+          "return_std": 181.8145801964577,
+          "never_reached_upright": 17,
+          "time_to_upright_mean_s": 7.05,
+          "time_to_upright_std_s": 1.5037286989347514,
+          "duration_mean_s": 7.0735,
+          "duration_std_s": 1.9698952015940236
+        },
+        {
+          "file": "results\\final\\baseline_qlearning_seed2.npz",
+          "method": "Q-learning",
+          "episodes": 20,
+          "eval_seeds": "100000..100019",
+          "success_rate": 0.0,
+          "unsafe_rate": 1.0,
+          "time_limit_rate": 0.0,
+          "return_mean": -1371.7176460887015,
+          "return_std": 54.6089847183304,
+          "never_reached_upright": 20,
+          "time_to_upright_mean_s": null,
+          "time_to_upright_std_s": null,
+          "duration_mean_s": 4.796000000000001,
+          "duration_std_s": 0.8713776146817298
+        }
+      ]
+    },
+    "SARSA / baseline": {
+      "success_rate": [
+        0.0,
+        0.0
+      ],
+      "unsafe_rate": [
+        1.0,
+        0.0
+      ],
+      "time_limit_rate": [
+        0.0,
+        0.0
+      ],
+      "return_mean": [
+        -1404.1232778760561,
+        23.905862490832632
+      ],
+      "return_std": [
+        130.65671364650112,
+        45.77678180013185
+      ],
+      "never_reached_upright": [
+        14.0,
+        1.632993161855452
+      ],
+      "time_to_upright_mean_s": [
+        9.62138888888889,
+        1.6953321445212186
+      ],
+      "duration_mean_s": [
+        8.169666666666666,
+        1.5271147268260132
+      ],
+      "per_seed": [
+        {
+          "file": "results\\final\\baseline_sarsa_seed0.npz",
+          "method": "SARSA",
+          "episodes": 20,
+          "eval_seeds": "100000..100019",
+          "success_rate": 0.0,
+          "unsafe_rate": 1.0,
+          "time_limit_rate": 0.0,
+          "return_mean": -1377.0260960455662,
+          "return_std": 93.52285005601554,
+          "never_reached_upright": 16,
+          "time_to_upright_mean_s": 7.4725,
+          "time_to_upright_std_s": 0.2718302166181432,
+          "duration_mean_s": 6.0425,
+          "duration_std_s": 2.5402836041422
+        },
+        {
+          "file": "results\\final\\baseline_sarsa_seed1.npz",
+          "method": "SARSA",
+          "episodes": 20,
+          "eval_seeds": "100000..100019",
+          "success_rate": 0.0,
+          "unsafe_rate": 1.0,
+          "time_limit_rate": 0.0,
+          "return_mean": -1400.163515219937,
+          "return_std": 103.29894882763733,
+          "never_reached_upright": 14,
+          "time_to_upright_mean_s": 11.616666666666667,
+          "time_to_upright_std_s": 3.905036064707555,
+          "duration_mean_s": 9.556500000000002,
+          "duration_std_s": 3.857403373964627
+        },
+        {
+          "file": "results\\final\\baseline_sarsa_seed2.npz",
+          "method": "SARSA",
+          "episodes": 20,
+          "eval_seeds": "100000..100019",
+          "success_rate": 0.0,
+          "unsafe_rate": 1.0,
+          "time_limit_rate": 0.0,
+          "return_mean": -1435.180222362666,
+          "return_std": 195.14834205585046,
+          "never_reached_upright": 12,
+          "time_to_upright_mean_s": 9.775,
+          "time_to_upright_std_s": 3.215818047446981,
+          "duration_mean_s": 8.909999999999998,
+          "duration_std_s": 5.185312252689778
+        }
+      ]
+    },
+    "Q-learning / coarse arm bins": {
+      "success_rate": [
+        0.0,
+        0.0
+      ],
+      "unsafe_rate": [
+        1.0,
+        0.0
+      ],
+      "time_limit_rate": [
+        0.0,
+        0.0
+      ],
+      "return_mean": [
+        -1387.908486271335,
+        28.77198514994416
+      ],
+      "return_std": [
+        123.23321095643844,
+        8.96445952789342
+      ],
+      "never_reached_upright": [
+        10.0,
+        2.943920288775949
+      ],
+      "time_to_upright_mean_s": [
+        8.493862433862434,
+        0.9148651743737927
+      ],
+      "duration_mean_s": [
+        10.220333333333333,
+        1.355262848634496
+      ],
+      "per_seed": [
+        {
+          "file": "results\\final\\coarsephi_qlearning_seed0.npz",
+          "method": "Q-learning",
+          "episodes": 20,
+          "eval_seeds": "100000..100019",
+          "success_rate": 0.0,
+          "unsafe_rate": 1.0,
+          "time_limit_rate": 0.0,
+          "return_mean": -1351.1164325336213,
+          "return_std": 115.06390336118129,
+          "never_reached_upright": 11,
+          "time_to_upright_mean_s": 8.014444444444445,
+          "time_to_upright_std_s": 2.4840848974577696,
+          "duration_mean_s": 9.702,
+          "duration_std_s": 3.2515301660991294
+        },
+        {
+          "file": "results\\final\\coarsephi_qlearning_seed1.npz",
+          "method": "Q-learning",
+          "episodes": 20,
+          "eval_seeds": "100000..100019",
+          "success_rate": 0.0,
+          "unsafe_rate": 1.0,
+          "time_limit_rate": 0.0,
+          "return_mean": -1421.3544061804696,
+          "return_std": 135.71364417002442,
+          "never_reached_upright": 6,
+          "time_to_upright_mean_s": 9.774285714285714,
+          "time_to_upright_std_s": 3.169961694225522,
+          "duration_mean_s": 12.077499999999999,
+          "duration_std_s": 4.974785766347394
+        },
+        {
+          "file": "results\\final\\coarsephi_qlearning_seed2.npz",
+          "method": "Q-learning",
+          "episodes": 20,
+          "eval_seeds": "100000..100019",
+          "success_rate": 0.0,
+          "unsafe_rate": 1.0,
+          "time_limit_rate": 0.0,
+          "return_mean": -1391.254620099914,
+          "return_std": 118.92208533810962,
+          "never_reached_upright": 13,
+          "time_to_upright_mean_s": 7.692857142857144,
+          "time_to_upright_std_s": 1.3599597332974518,
+          "duration_mean_s": 8.881499999999999,
+          "duration_std_s": 2.632905689237853
+        }
+      ]
+    },
+    "SARSA / coarse arm bins": {
+      "success_rate": [
+        0.0,
+        0.0
+      ],
+      "unsafe_rate": [
+        1.0,
+        0.0
+      ],
+      "time_limit_rate": [
+        0.0,
+        0.0
+      ],
+      "return_mean": [
+        -1356.8721874304517,
+        88.2290711156682
+      ],
+      "return_std": [
+        82.6554491203457,
+        13.330461622550219
+      ],
+      "never_reached_upright": [
+        6.333333333333333,
+        2.6246692913372702
+      ],
+      "time_to_upright_mean_s": [
+        7.990166666666667,
+        1.2236517977849017
+      ],
+      "duration_mean_s": [
+        9.361333333333333,
+        1.3585357517889942
+      ],
+      "per_seed": [
+        {
+          "file": "results\\final\\coarsephi_sarsa_seed0.npz",
+          "method": "SARSA",
+          "episodes": 20,
+          "eval_seeds": "100000..100019",
+          "success_rate": 0.0,
+          "unsafe_rate": 1.0,
+          "time_limit_rate": 0.0,
+          "return_mean": -1481.6003373042388,
+          "return_std": 74.38558173828702,
+          "never_reached_upright": 5,
+          "time_to_upright_mean_s": 9.356,
+          "time_to_upright_std_s": 1.7511416684143928,
+          "duration_mean_s": 10.5215,
+          "duration_std_s": 2.359648223113375
+        },
+        {
+          "file": "results\\final\\coarsephi_sarsa_seed1.npz",
+          "method": "SARSA",
+          "episodes": 20,
+          "eval_seeds": "100000..100019",
+          "success_rate": 0.0,
+          "unsafe_rate": 1.0,
+          "time_limit_rate": 0.0,
+          "return_mean": -1291.5551552136415,
+          "return_std": 101.46208280550653,
+          "never_reached_upright": 4,
+          "time_to_upright_mean_s": 8.227500000000001,
+          "time_to_upright_std_s": 1.9148664009098215,
+          "duration_mean_s": 10.107499999999998,
+          "duration_std_s": 2.5411080778191812
+        },
+        {
+          "file": "results\\final\\coarsephi_sarsa_seed2.npz",
+          "method": "SARSA",
+          "episodes": 20,
+          "eval_seeds": "100000..100019",
+          "success_rate": 0.0,
+          "unsafe_rate": 1.0,
+          "time_limit_rate": 0.0,
+          "return_mean": -1297.4610697734745,
+          "return_std": 72.11868281724357,
+          "never_reached_upright": 10,
+          "time_to_upright_mean_s": 6.3870000000000005,
+          "time_to_upright_std_s": 0.6884935245398706,
+          "duration_mean_s": 7.455,
+          "duration_std_s": 2.619633361248941
+        }
+      ]
+    }
+  },
+  "visits": {
+    "entries": 25200,
+    "entries_visited": 12789,
+    "entries_visited_10plus": 8211,
+    "states_visited": 5188,
+    "share_of_updates_top_1pct_entries": 0.3760083601623727,
+    "share_upright_region": 0.005244922731999461
+  },
+  "training": {
+    "baseline/qlearning": {
+      "reached_upright_last1000_mean": 0.22966666666666669,
+      "success_any_episode": 0,
+      "train_seconds": [
+        487.0353532000445,
+        487.9644962998573,
+        486.3419522000477
+      ]
+    },
+    "baseline/sarsa": {
+      "reached_upright_last1000_mean": 0.2913333333333333,
+      "success_any_episode": 0,
+      "train_seconds": [
+        464.67296869982965,
+        489.2027708000969,
+        485.7972015000414
+      ]
+    },
+    "coarsephi/qlearning": {
+      "reached_upright_last1000_mean": 0.5056666666666666,
+      "success_any_episode": 0,
+      "train_seconds": [
+        544.115794399986,
+        550.0329303999897,
+        537.646973699797
+      ]
+    },
+    "coarsephi/sarsa": {
+      "reached_upright_last1000_mean": 0.5499999999999999,
+      "success_any_episode": 2,
+      "train_seconds": [
+        544.6358026000671,
+        544.3876747000031,
+        531.8210123002063
+      ]
+    },
+    "long50k/qlearning": {
+      "reached_upright_last1000": 0.558,
+      "success_any_episode": 8
+    }
+  },
+  "long50k_eval": {
+    "file": "results\\final\\long50k_qlearning_seed0.npz",
+    "method": "Q-learning",
+    "episodes": 20,
+    "eval_seeds": "100000..100019",
+    "success_rate": 0.05,
+    "unsafe_rate": 0.95,
+    "time_limit_rate": 0.0,
+    "return_mean": -1220.5215166437183,
+    "return_std": 375.75002548678793,
+    "never_reached_upright": 6,
+    "time_to_upright_mean_s": 8.786428571428571,
+    "time_to_upright_std_s": 2.575749650827165,
+    "duration_mean_s": 12.0155,
+    "duration_std_s": 5.606336147610131
+  }
+}

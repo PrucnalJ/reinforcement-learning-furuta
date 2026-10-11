@@ -53,17 +53,22 @@ for s in 0 1 2; do
   python train.py --method sarsa     --seed $s --phi-edges 0.5,1.5 --tag coarsephi --out results/final
 done
 
+# longer budget (reported separately, not part of the comparison)
+python train.py --method qlearning --seed 0 --episodes 50000 --eps-decay-episodes 40000 --tag long50k --out results/final
+
 python make_figures.py          # writes figures/ and figures/summary.json
 ```
 
 Evaluation uses 20 greedy episodes per table from seeds 100000-100019, identical
 for every method and configuration.
 
+The learned Q tables used in the report are committed in `results/final/`.
+
 ## Try it
 
 ```bash
 python play.py                                              # you control the arm (arrow keys)
-python watch.py results/final/baseline_qlearning_seed0.npz  # watch a trained agent
+python watch.py results/final/long50k_qlearning_seed0.npz   # watch a trained agent
 python playground.py                                        # sliders for alpha, gamma, epsilon, reward
 python train.py --method qlearning --episodes 3000 --live   # watch the agent while it trains
 ```
