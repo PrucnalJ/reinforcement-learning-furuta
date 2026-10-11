@@ -86,6 +86,8 @@ def parse_args(argv=None):
     p.add_argument("--eps-end", type=float, default=0.05)
     p.add_argument("--eps-decay-episodes", type=int, default=2000)
     p.add_argument("--max-steps", type=int, default=SwingUpConfig.max_steps)
+    p.add_argument("--action-repeat", type=int, default=SwingUpConfig.action_repeat,
+                   help="simulation steps per agent decision (held torque)")
     p.add_argument("--tag", default="baseline")
     p.add_argument("--out", default="results")
     p.add_argument("--print-every", type=int, default=100)
@@ -97,7 +99,7 @@ def parse_args(argv=None):
 
 
 def train(args) -> Path:
-    env_cfg = SwingUpConfig(max_steps=args.max_steps)
+    env_cfg = SwingUpConfig(max_steps=args.max_steps, action_repeat=args.action_repeat)
     bins = BinConfig()
     agent_cfg = AgentConfig(alpha=args.alpha, gamma=args.gamma,
                             epsilon=args.eps_start, q_init=args.q_init)
@@ -131,7 +133,7 @@ def train(args) -> Path:
         agent.cfg.epsilon = epsilon_at(ep, args)
         out = agent.run_episode(env, disc)
         log["return"][ep] = out["return"]
-        log["steps"][ep] = out["steps"]
+        log["steps"][ep] = out["sim_steps"]   # simulation steps (0.01 s)
         log["outcome"][ep] = OUTCOMES.index(out["outcome"])
         log["first_upright"][ep] = out["first_upright_step"] or -1
         log["epsilon"][ep] = agent.cfg.epsilon

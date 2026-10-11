@@ -54,9 +54,14 @@ class SwingUpConfig:
     lambda_phi: float = 0.05
     lambda_u: float = 1.0
     success_bonus: float = 100.0
-    unsafe_penalty: float = -100.0
+    unsafe_penalty: float = -1000.0
     process_noise_std: float = 0.0
     fast: bool = True  # same equations, scalar math (see fast_furuta.py)
+    # Control period: the agent picks an action every action_repeat
+    # simulation steps and the torque is held in between (zero-order hold).
+    # The simulator still integrates at dt; rewards of the held steps are
+    # summed and success/unsafe are still checked at every simulation step.
+    action_repeat: int = 1
 
 
 class SwingUpEnv:
@@ -109,6 +114,17 @@ class SwingUpEnv:
         return self.state, {}
 
     def step(self, action: int) -> Tuple[np.ndarray, float, bool, bool, Dict]:
+        """One agent decision: hold the action for action_repeat sim steps."""
+        total = 0.0
+        for _ in range(self.cfg.action_repeat):
+            state, reward, terminated, truncated, info = self._sim_step(action)
+            total += reward
+            if terminated or truncated:
+                break
+        info["sim_steps"] = self.steps
+        return state, total, terminated, truncated, info
+
+    def _sim_step(self, action: int) -> Tuple[np.ndarray, float, bool, bool, Dict]:
         c = self.cfg
         state, _, _, _, info = self.env.step(action)  # supplied reward unused
         self.steps += 1
