@@ -61,7 +61,7 @@ class SwingUpConfig:
     # simulation steps and the torque is held in between (zero-order hold).
     # The simulator still integrates at dt; rewards of the held steps are
     # summed and success/unsafe are still checked at every simulation step.
-    action_repeat: int = 1
+    action_repeat: int = 5
 
 
 class SwingUpEnv:

@@ -32,7 +32,7 @@ def _symmetric(values) -> np.ndarray:
 class BinConfig:
     """Interior bin edges for [phi, phi_dot, theta_wrapped, theta_dot]."""
 
-    phi: np.ndarray = field(default_factory=lambda: _symmetric([0.5, 1.5]))
+    phi: np.ndarray = field(default_factory=lambda: _symmetric([0.5, 1.5, 2.2, 2.7]))
     phi_dot: np.ndarray = field(default_factory=lambda: _symmetric([1.0, 4.0]))
     theta: np.ndarray = field(default_factory=lambda: _symmetric(
         np.deg2rad([5, 12, 20, 45, 90, 135])))

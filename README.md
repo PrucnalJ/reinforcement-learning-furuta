@@ -1,100 +1,69 @@
-# Furuta Pendulum Python Starter
+# Furuta pendulum swing-up with tabular SARSA and Q-learning
 
-This folder contains a small simulation interface for the reinforcement-learning
-project. It is a Python restructuring of the supplied MATLAB file, not a
-ready-made RL solution.
+COSC 527 Midterm Project A. A tabular agent learns, from sampled transitions
+only, to swing a simulated Furuta pendulum up from the downward position and
+hold it within 20 degrees of upright for 5 s, using three discrete torques.
 
-## Important model note
+The simulator (`furuta_env.py`) is the supplied course file, unchanged. Its
+parameters come from Gäfvert (1998) and are not a calibrated QUBE-Servo 3
+model, so all results concern the simulation.
 
-The numerical parameters in the original MATLAB file come from Magnus
-Gäfvert's 1998 Furuta-pendulum model. They are **not calibrated QUBE-Servo 3
-parameters**. Use this code as the course simulation model unless the project
-instructions explicitly provide replacement parameters.
+## Install
 
-The optional paper *Modelling the Furuta Pendulum* explains the derivation of
-the nonlinear equations. You do not need to reproduce that derivation to use
-the starter environment.
-
-## State, action, and interaction
-
-The continuous state is
-
-```text
-x = [arm angle, arm angular velocity,
-     pendulum angle, pendulum angular velocity]
-```
-
-The upright pendulum corresponds to `pendulum angle = 0`. By default, the
-agent chooses among three integer actions:
-
-| Action | Applied torque |
-|---:|---:|
-| 0 | -0.02 N m |
-| 1 | 0 N m |
-| 2 | +0.02 N m |
-
-The agent does not need the equations of motion. It interacts with the model
-through:
-
-```python
-state, info = env.reset()
-next_state, reward, terminated, truncated, info = env.step(action)
-```
-
-This is model-free learning from the **agent's** perspective even though the
-simulator internally uses a known mathematical model to generate transitions.
-
-## Installation and first run
-
-Python 3.10 or newer is recommended.
+Python 3.10 or newer.
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
+.venv\Scripts\activate             # macOS/Linux: source .venv/bin/activate
 python -m pip install -r requirements.txt
-python example_run.py
 ```
 
-The example applies zero torque. It is only an interface test and is not
-expected to balance the pendulum.
+## Files
 
-## What the starter code supplies
+| File | Purpose |
+| --- | --- |
+| `furuta_env.py` | Supplied simulator (unchanged) |
+| `fast_furuta.py` | Same equations with scalar math for speed; `python fast_furuta.py` shows it matches the supplied simulator exactly |
+| `swingup_env.py` | Swing-up task: initial condition, wrapped angle, reward, success / unsafe / time-limit outcomes, 0.05 s control period |
+| `discretize.py` | State bins (8400 states x 3 actions); `python discretize.py` runs the range tests |
+| `agents.py` | SARSA and Q-learning (Lecture 5 pseudocode), epsilon-greedy with random tie-breaking, greedy evaluation |
+| `train.py` | Train one agent; saves Q table, visits, logs and config to an `.npz` |
+| `evaluate.py` | Frozen greedy evaluation on fixed seeds |
+| `make_figures.py` | Every report figure and table, from `results/final/` |
+| `verify_env.py` | Required environment checks |
+| `play.py`, `watch.py`, `playground.py` | Play the task yourself, watch a trained agent, or tweak values live |
 
-- the nonlinear continuous-time dynamics;
-- numerical integration with a fourth-order Runge--Kutta step;
-- a discrete torque-action interface;
-- episode termination and truncation;
-- one baseline reward definition; and
-- a helper for converting continuous measurements to discrete table indices.
+## Reproduce the reported experiments
 
-## What the student must design
+The defaults in the code are the baseline configuration.
 
-The project instructions determine the exact required experiments, but the
-starter intentionally does not provide:
+```bash
+python verify_env.py
+python discretize.py
 
-- a state discretization;
-- a Q table;
-- an exploration policy;
-- SARSA or Q-learning updates;
-- training and evaluation loops; or
-- plots and analysis.
+# baseline, seeds 0-2, both methods (about 5-10 min per run)
+for s in 0 1 2; do
+  python train.py --method qlearning --seed $s --tag baseline --out results/final
+  python train.py --method sarsa     --seed $s --tag baseline --out results/final
+done
 
-Keep training and evaluation separate. During training, exploration may be
-enabled and the Q table is updated. During evaluation, freeze the learned
-table and normally select greedy actions.
+# controlled comparison: coarse arm-angle bins, everything else identical
+for s in 0 1 2; do
+  python train.py --method qlearning --seed $s --phi-edges 0.5,1.5 --tag coarsephi --out results/final
+  python train.py --method sarsa     --seed $s --phi-edges 0.5,1.5 --tag coarsephi --out results/final
+done
 
-## Suggested checks before training
+python make_figures.py          # writes figures/ and figures/summary.json
+```
 
-1. Call `reset()` and verify that a four-element state is returned.
-2. Apply each legal action and confirm the torque reported in `info`.
-3. Verify that an episode ends when the pendulum leaves the allowed angle.
-4. Test the discretizer on values below, inside, and above the selected ranges.
-5. Set and report random seeds for reproducible comparisons.
+Evaluation uses 20 greedy episodes per table from seeds 100000-100019, identical
+for every method and configuration.
 
-## File map
+## Try it
 
-- `furuta_env.py`: simulator and discretization helper.
-- `example_run.py`: minimal interaction example.
-- `requirements.txt`: Python dependency.
-- `model_reference.md`: notation, MATLAB-to-Python mapping, and paper reference.
-
+```bash
+python play.py                                              # you control the arm (arrow keys)
+python watch.py results/final/baseline_qlearning_seed0.npz  # watch a trained agent
+python playground.py                                        # sliders for alpha, gamma, epsilon, reward
+python train.py --method qlearning --episodes 3000 --live   # watch the agent while it trains
+```

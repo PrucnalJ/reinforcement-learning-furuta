@@ -77,14 +77,14 @@ def parse_args(argv=None):
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--method", choices=AGENTS, required=True)
-    p.add_argument("--episodes", type=int, default=3000)
+    p.add_argument("--episodes", type=int, default=20000)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--alpha", type=float, default=0.1)
     p.add_argument("--gamma", type=float, default=0.99)
     p.add_argument("--q-init", type=float, default=0.0)
     p.add_argument("--eps-start", type=float, default=1.0)
     p.add_argument("--eps-end", type=float, default=0.05)
-    p.add_argument("--eps-decay-episodes", type=int, default=2000)
+    p.add_argument("--eps-decay-episodes", type=int, default=15000)
     p.add_argument("--max-steps", type=int, default=SwingUpConfig.max_steps)
     p.add_argument("--action-repeat", type=int, default=SwingUpConfig.action_repeat,
                    help="simulation steps per agent decision (held torque)")
