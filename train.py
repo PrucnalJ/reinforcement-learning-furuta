@@ -22,7 +22,7 @@ from pathlib import Path
 import numpy as np
 
 from agents import AgentConfig, QLearningAgent, SarsaAgent, run_greedy_episode
-from discretize import BinConfig, Discretizer
+from discretize import BinConfig, Discretizer, _symmetric
 from swingup_env import SwingUpConfig, SwingUpEnv
 
 AGENTS = {"sarsa": SarsaAgent, "qlearning": QLearningAgent}
@@ -88,6 +88,11 @@ def parse_args(argv=None):
     p.add_argument("--max-steps", type=int, default=SwingUpConfig.max_steps)
     p.add_argument("--action-repeat", type=int, default=SwingUpConfig.action_repeat,
                    help="simulation steps per agent decision (held torque)")
+    p.add_argument("--crash-penalty", type=float, default=SwingUpConfig.unsafe_penalty)
+    p.add_argument("--success-bonus", type=float, default=SwingUpConfig.success_bonus)
+    p.add_argument("--lambda-phi", type=float, default=SwingUpConfig.lambda_phi)
+    p.add_argument("--phi-edges", default=None,
+                   help="positive arm-angle bin edges, e.g. 0.5,1.5,2.2,2.7 (mirrored)")
     p.add_argument("--tag", default="baseline")
     p.add_argument("--out", default="results")
     p.add_argument("--print-every", type=int, default=100)
@@ -99,8 +104,13 @@ def parse_args(argv=None):
 
 
 def train(args) -> Path:
-    env_cfg = SwingUpConfig(max_steps=args.max_steps, action_repeat=args.action_repeat)
+    env_cfg = SwingUpConfig(max_steps=args.max_steps, action_repeat=args.action_repeat,
+                            unsafe_penalty=args.crash_penalty,
+                            success_bonus=args.success_bonus,
+                            lambda_phi=args.lambda_phi)
     bins = BinConfig()
+    if args.phi_edges:
+        bins.phi = _symmetric([float(v) for v in args.phi_edges.split(",")])
     agent_cfg = AgentConfig(alpha=args.alpha, gamma=args.gamma,
                             epsilon=args.eps_start, q_init=args.q_init)
 
