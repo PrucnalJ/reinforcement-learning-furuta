@@ -10,3 +10,6 @@ venv/
 
 # Large generated artifacts
 *.npz.tmp
+
+# Scratch results (final tables are added explicitly)
+results/
