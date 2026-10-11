@@ -21,8 +21,7 @@ from matplotlib.animation import FuncAnimation
 
 from swingup_env import SwingUpEnv
 
-STEPS_PER_FRAME = 3          # 3 x 10 ms per 30 ms frame = roughly real time
-FRAME_INTERVAL_MS = 30
+REAL_TIME_FRAME_S = 0.03     # aim for about one redraw per 30 ms of simulated time
 
 
 class PendulumView:
@@ -112,8 +111,13 @@ class Game:
         self.fig.canvas.mpl_connect("key_press_event", self.on_press)
         self.fig.canvas.mpl_connect("key_release_event", self.on_release)
 
+        # Each env.step() is one agent decision = action_repeat * dt seconds.
+        # Pick decisions per frame and the frame interval so playback is real time.
+        period = self.env.cfg.dt * self.env.cfg.action_repeat
+        self.decisions_per_frame = max(1, round(REAL_TIME_FRAME_S / period))
+        interval_ms = int(1000 * self.decisions_per_frame * period)
         self.anim = FuncAnimation(self.fig, self.update,
-                                  interval=FRAME_INTERVAL_MS,
+                                  interval=interval_ms,
                                   cache_frame_data=False)
 
     def reset(self) -> None:
@@ -145,7 +149,7 @@ class Game:
     def update(self, _frame):
         info = {"hold_counter": self.env.hold_counter}
         if self.outcome == "running":
-            for _ in range(STEPS_PER_FRAME):
+            for _ in range(self.decisions_per_frame):
                 self.state, r, term, trunc, info = self.env.step(self.action())
                 self.total_reward += r
                 if term or trunc:

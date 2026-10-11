@@ -35,7 +35,7 @@ from swingup_env import SwingUpConfig, SwingUpEnv
 EPISODES_PER_TICK = 3        # training episodes between screen refreshes
 TURBO_EPISODES_PER_TICK = 15
 REPLAY_EVERY = 50            # training episodes between replays
-REPLAY_STEPS_PER_FRAME = 12  # 4x real time
+REPLAY_SPEED = 4             # replay at 4x real time
 WINDOW = 50                  # episodes in the rolling statistics
 
 
@@ -204,15 +204,17 @@ class Playground:
             if r["hold"] > 40:
                 self.replay = None
             return
+        rep = self.cfg.action_repeat
+        per_frame = max(1, round(3 * REPLAY_SPEED / rep))
         i = min(r["i"], n - 1)
         phi, _, theta, _ = test["state_trace"][i]
-        done = r["i"] + REPLAY_STEPS_PER_FRAME >= n
+        done = r["i"] + per_frame >= n
         status = STATUS[test["outcome"]] if done else ""
         self.view.draw(phi, theta,
                        f"test run after {self.episode} episodes\n"
-                       + status_line(i + 1, test["hold_trace"][i], phi,
+                       + status_line((i + 1) * rep, test["hold_trace"][i], phi,
                                      test["return_trace"][i]) + f"\n{status}")
-        r["i"] += REPLAY_STEPS_PER_FRAME
+        r["i"] += per_frame
 
     def rolling(self):
         if not self.history:

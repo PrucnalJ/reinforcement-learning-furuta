@@ -33,13 +33,14 @@ class LivePendulum:
     """--live: after each printed terminal line, replay one greedy test
     episode of the current agent in the pendulum window, then keep training."""
 
-    def __init__(self, title: str, speed: float) -> None:
+    def __init__(self, title: str, speed: float, action_repeat: int = 1) -> None:
         import matplotlib.pyplot as plt
         from play import PendulumView
         self.plt = plt
         plt.ion()
         self.view = PendulumView(title)
-        self.steps_per_frame = max(1, int(round(3 * speed)))
+        self.rep = action_repeat  # simulation steps per recorded decision
+        self.steps_per_frame = max(1, int(round(3 * speed / action_repeat)))
         plt.show(block=False)
 
     def replay(self, header: str, test: dict) -> None:
@@ -53,7 +54,8 @@ class LivePendulum:
                 return  # window closed: keep training without the view
             phi, _, theta, _ = states[i]
             done = i == n - 1
-            line = status_line(i + 1, test["hold_trace"][i], phi, test["return_trace"][i])
+            line = status_line((i + 1) * self.rep, test["hold_trace"][i], phi,
+                               test["return_trace"][i])
             status = STATUS[test["outcome"]] if done else ""
             self.view.draw(phi, theta, f"{line}\n{status}")
             self.plt.pause(0.001)
@@ -132,7 +134,8 @@ def train(args) -> Path:
           f"alpha {args.alpha}, gamma {args.gamma}, "
           f"epsilon {args.eps_start} -> {args.eps_end} over {args.eps_decay_episodes}")
     print(f"Q table: {disc.n_states} states x {env.number_of_actions} actions")
-    live = (LivePendulum(f"Training {agent.name}, seed {args.seed}", args.live_speed)
+    live = (LivePendulum(f"Training {agent.name}, seed {args.seed}", args.live_speed,
+                         env_cfg.action_repeat)
             if args.live else None)
     # Separate env and RNG for the live greedy test episodes, so watching
     # does not change the training run (results are identical with/without).

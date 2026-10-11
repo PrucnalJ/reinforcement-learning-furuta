@@ -96,7 +96,8 @@ def plot(results, out_dir: Path, n_traces: int = 5) -> None:
                              squeeze=False)
     for ax, (s, rows) in zip(axes[:, 0], results):
         for r in rows[:n_traces]:
-            t = np.arange(1, len(r["theta_trace"]) + 1) * 0.01
+            n = len(r["theta_trace"])          # one point per agent decision
+            t = np.arange(1, n + 1) * (r["sim_steps"] * 0.01 / n)
             ax.plot(t, np.rad2deg(r["theta_trace"]), lw=1,
                     label=f"{r['outcome']}")
         ax.axhspan(-20, 20, color="tab:green", alpha=0.15)
