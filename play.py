@@ -94,9 +94,9 @@ class Game:
     """policy=None: you press the keys.  policy=f(state)->action: f plays."""
 
     def __init__(self, policy=None, title="Furuta swing-up", auto_restart=False,
-                 seed=None, env_cfg=None, replay=False) -> None:
-        # replay=True: every reset restarts the same seeded episode.
-        self.env_cfg, self.seed, self.replay = env_cfg, seed, replay
+                 seed=None, env_cfg=None, replay_seeds=None) -> None:
+        # replay_seeds: play these seeded episodes in order, then loop.
+        self.env_cfg, self.replay_seeds = env_cfg, replay_seeds
         self.env = SwingUpEnv(env_cfg, seed=seed)
         self.policy = policy
         self.auto_restart = auto_restart
@@ -123,10 +123,11 @@ class Game:
                                   cache_frame_data=False)
 
     def reset(self) -> None:
-        if self.replay:
-            self.env = SwingUpEnv(self.env_cfg, seed=self.seed)
+        if self.replay_seeds:
+            seed = self.replay_seeds[self.episode % len(self.replay_seeds)]
+            self.env = SwingUpEnv(self.env_cfg, seed=seed)
             if hasattr(self.policy, "reset"):
-                self.policy.reset()
+                self.policy.reset(seed)
         self.state, _ = self.env.reset()
         self.total_reward = 0.0
         self.outcome = "running"

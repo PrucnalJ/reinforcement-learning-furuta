@@ -1,13 +1,14 @@
 """Watch a trained agent play the swing-up task.
 
 Run:  python watch.py results/final/long50kcoarse_qlearning_seed0.npz
-      python watch.py results/final/crash100_qlearning_seed0.npz --eval-episode 1
+      python watch.py results/final/crash100_qlearning_seed0.npz --eval-episode 1 3 5 6 4
+      python watch.py results/final/long50kcoarse_qlearning_seed0.npz --eval-episode 10
 
 The agent acts greedily from its saved Q table (no exploration, no learning),
 exactly as in evaluation, in the environment settings it was trained with.
 Episodes restart automatically; r resets, q quits.
 
---eval-episode K replays evaluation episode K (seed 100000 + K, the same
+--eval-episode K [K ...] replays those evaluation episodes (seed 100000 + K, the same
 initial condition and tie-breaking as evaluate.py) on a loop.
 """
 
@@ -37,8 +38,8 @@ class GreedyPolicy:
         self.Q, self.disc, self.seed = Q, disc, seed
         self.reset()
 
-    def reset(self):
-        self.rng = np.random.default_rng(self.seed)
+    def reset(self, seed=None):
+        self.rng = np.random.default_rng(self.seed if seed is None else seed)
 
     def __call__(self, state) -> int:
         row = self.Q[self.disc(state)]
@@ -56,17 +57,18 @@ def load_policy(path: str, seed: int = 0):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("path", help="saved .npz from train.py")
-    ap.add_argument("--eval-episode", type=int, default=None,
-                    help="replay this evaluation episode (0-19) on a loop")
+    ap.add_argument("--eval-episode", type=int, nargs="+", default=None,
+                    help="replay these evaluation episodes (0-19) in order, on a loop")
     args = ap.parse_args()
     if args.eval_episode is None:
         policy, env_cfg = load_policy(args.path)
         game = Game(policy=policy, title=f"Agent: {args.path}",
                     auto_restart=True, env_cfg=env_cfg)
     else:
-        seed = EVAL_SEED_BASE + args.eval_episode
-        policy, env_cfg = load_policy(args.path, seed)
+        seeds = [EVAL_SEED_BASE + k for k in args.eval_episode]
+        policy, env_cfg = load_policy(args.path, seeds[0])
+        listed = " ".join(map(str, args.eval_episode))
         game = Game(policy=policy, auto_restart=True, env_cfg=env_cfg,
-                    seed=seed, replay=True,
-                    title=f"Agent: {args.path}  (evaluation episode {args.eval_episode})")
+                    replay_seeds=seeds,
+                    title=f"Agent: {args.path}  (evaluation episodes {listed})")
     plt.show()

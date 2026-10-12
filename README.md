@@ -88,7 +88,8 @@ The learned Q tables used in the report are committed in `results/final/`.
 ```bash
 python play.py                                              # you control the arm (arrow keys)
 python watch.py results/final/long50kcoarse_qlearning_seed0.npz   # watch the best trained agent
-python watch.py results/final/crash100_qlearning_seed0.npz --eval-episode 1   # presentation demo: the -100 agent crashing on purpose
+python watch.py results/final/crash100_qlearning_seed0.npz --eval-episode 1 3 5 6 4   # demo 1: the -100 agent crashing on purpose
+python watch.py results/final/long50kcoarse_qlearning_seed0.npz --eval-episode 10     # demo 2: the one run that held 5 s
 python playground.py                                        # sliders for alpha, gamma, epsilon, reward
 python train.py --method qlearning --episodes 3000 --live   # watch the agent while it trains
 ```
