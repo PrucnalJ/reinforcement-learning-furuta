@@ -133,6 +133,11 @@ class Game:
         self.outcome = "running"
         self.episode += 1
 
+    def replay_done(self) -> bool:
+        """True once the last listed replay episode has finished."""
+        return (bool(self.replay_seeds) and self.outcome != "running"
+                and self.episode % len(self.replay_seeds) == 0)
+
     def on_press(self, event) -> None:
         if event.key == "r":
             self.reset()
@@ -163,14 +168,14 @@ class Game:
                     self.outcome = info["outcome"]
                     self.pause_frames = 40   # hold the final frame ~1 s
                     break
-        elif self.auto_restart:
+        elif self.auto_restart and not self.replay_done():
             self.pause_frames -= 1
             if self.pause_frames <= 0:
                 self.reset()
 
         phi, _, theta, _ = self.state
         status = STATUS[self.outcome]
-        if status and not self.auto_restart:
+        if status and (not self.auto_restart or self.replay_done()):
             status += "  Press r to play again."
         self.view.draw(phi, theta,
                        f"episode {self.episode}   "

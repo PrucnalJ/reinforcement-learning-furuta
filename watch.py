@@ -9,7 +9,7 @@ exactly as in evaluation, in the environment settings it was trained with.
 Episodes restart automatically; r resets, q quits.
 
 --eval-episode K [K ...] replays those evaluation episodes (seed 100000 + K, the same
-initial condition and tie-breaking as evaluate.py) on a loop.
+initial condition and tie-breaking as evaluate.py) once, then stops; r replays.
 """
 
 import argparse
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("path", help="saved .npz from train.py")
     ap.add_argument("--eval-episode", type=int, nargs="+", default=None,
-                    help="replay these evaluation episodes (0-19) in order, on a loop")
+                    help="replay these evaluation episodes (0-19) in order, then stop")
     args = ap.parse_args()
     if args.eval_episode is None:
         policy, env_cfg = load_policy(args.path)
