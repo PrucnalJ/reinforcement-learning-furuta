@@ -226,3 +226,51 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def fig_eval_success():
+    """Required plot: fraction of evaluation episodes with a 5 s hold, every policy.
+
+    Reads figures/summary.json (20k runs) and figures/long_eval.json (50k runs,
+    written by the evaluation of the long runs), so it can be redrawn alone.
+    """
+    summ = json.loads((OUT / "summary.json").read_text())["per_config"]
+    long = json.loads((OUT / "long_eval.json").read_text())
+    def pooled(key):
+        per = summ[key]["per_seed"]
+        n = sum(s["episodes"] for s in per)
+        succ = sum(round(s["success_rate"] * s["episodes"]) for s in per)
+        up = sum(s["episodes"] - s["never_reached_upright"] for s in per)
+        return succ, up, n
+    def one(name):
+        s = long[name]
+        return round(s["success_rate"] * s["episodes"]), s["episodes"] - s["never_reached_upright"], s["episodes"]
+    rows = [
+        ("Q-learning\n20k, 3 seeds", pooled("Q-learning / baseline")),
+        ("SARSA\n20k, 3 seeds", pooled("SARSA / baseline")),
+        ("Q-learning\n20k coarse, 3 seeds", pooled("Q-learning / coarse arm bins")),
+        ("SARSA\n20k coarse, 3 seeds", pooled("SARSA / coarse arm bins")),
+        ("Q-learning\n50k", one("long50k_qlearning_seed0")),
+        ("SARSA\n50k", one("long50k_sarsa_seed0")),
+        ("Q-learning\n50k coarse", one("long50kcoarse_qlearning_seed0")),
+        ("SARSA\n50k coarse, 2 seeds", tuple(a + b for a, b in zip(one("long50kcoarse_sarsa_seed0"),
+                                                                one("long50kcoarse_sarsa_seed1")))),
+    ]
+    x = np.arange(len(rows))
+    succ = [s / n for _, (s, _, n) in rows]
+    up = [u / n for _, (_, u, n) in rows]
+    fig, ax = plt.subplots(figsize=(11, 4))
+    ax.bar(x - 0.2, up, 0.4, color="tab:blue", alpha=0.35, label="reached upright at least once")
+    ax.bar(x + 0.2, succ, 0.4, color="tab:green", label="held 5 s (success)")
+    for i, (_, (s, u, n)) in enumerate(rows):
+        ax.text(x[i] - 0.2, up[i] + 0.02, f"{u}/{n}", ha="center", fontsize=8)
+        ax.text(x[i] + 0.2, succ[i] + 0.02, f"{s}/{n}", ha="center", fontsize=8, fontweight="bold")
+    ax.set_xticks(x, [r[0] for r in rows], fontsize=8)
+    ax.set_ylim(0, 1.05)
+    ax.set_ylabel("fraction of evaluation episodes")
+    ax.set_title("Greedy evaluation (20 episodes per policy, seeds 100000-100019): "
+                 "five-second balancing was reached only after 50,000 episodes", fontsize=10)
+    ax.legend(fontsize=8, loc="upper left")
+    ax.grid(axis="y", alpha=0.3)
+    fig.tight_layout()
+    fig.savefig(OUT / "fig_eval_success.png", dpi=150)
