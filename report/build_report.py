@@ -15,7 +15,7 @@ import sys
 
 import markdown
 
-AUTHORS = "Jacek Prucnal and Rocco"
+AUTHORS = "Jacek Prucnal and Rocco DeLuca"
 DATE = "October 12, 2026"
 
 HERE = pathlib.Path(__file__).resolve().parent

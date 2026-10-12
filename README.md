@@ -1,6 +1,9 @@
 # Furuta pendulum swing-up with tabular SARSA and Q-learning
 
-COSC 527 Midterm Project A. A tabular agent learns, from sampled transitions
+COSC 527 Midterm Project A. Jacek Prucnal and Rocco DeLuca. Python 3.12,
+NumPy, Matplotlib (`pip install -r requirements.txt`).
+
+A tabular agent learns, from sampled transitions
 only, to swing a simulated Furuta pendulum up from the downward position and
 hold it within 20 degrees of upright for 5 s, using three discrete torques.
 
