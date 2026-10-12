@@ -1,0 +1,86 @@
+{
+  "baseline_qlearning": {
+    "schedule": "1.0 to 0.05 over 15,000 episodes",
+    "method": "qlearning",
+    "train_reached_last1000": 0.22966666666666669,
+    "train_holds": 0,
+    "eval_reached": 4,
+    "eval_reached_per_seed": [
+      1,
+      3,
+      0
+    ],
+    "eval_success": 0,
+    "eval_duration_s": 5.910333333333334
+  },
+  "baseline_sarsa": {
+    "schedule": "1.0 to 0.05 over 15,000 episodes",
+    "method": "sarsa",
+    "train_reached_last1000": 0.2913333333333333,
+    "train_holds": 0,
+    "eval_reached": 18,
+    "eval_reached_per_seed": [
+      4,
+      6,
+      8
+    ],
+    "eval_success": 0,
+    "eval_duration_s": 8.169666666666666
+  },
+  "epsfast_qlearning": {
+    "schedule": "1.0 to 0.05 over 5,000 episodes",
+    "method": "qlearning",
+    "train_reached_last1000": 0.36800000000000005,
+    "train_holds": 0,
+    "eval_reached": 29,
+    "eval_reached_per_seed": [
+      11,
+      17,
+      1
+    ],
+    "eval_success": 0,
+    "eval_duration_s": 10.812833333333336
+  },
+  "epsfast_sarsa": {
+    "schedule": "1.0 to 0.05 over 5,000 episodes",
+    "method": "sarsa",
+    "train_reached_last1000": 0.4223333333333333,
+    "train_holds": 1,
+    "eval_reached": 32,
+    "eval_reached_per_seed": [
+      9,
+      15,
+      8
+    ],
+    "eval_success": 0,
+    "eval_duration_s": 7.3486666666666665
+  },
+  "epsfixed01_qlearning": {
+    "schedule": "fixed 0.1",
+    "method": "qlearning",
+    "train_reached_last1000": 0.36966666666666664,
+    "train_holds": 0,
+    "eval_reached": 15,
+    "eval_reached_per_seed": [
+      8,
+      3,
+      4
+    ],
+    "eval_success": 0,
+    "eval_duration_s": 7.914166666666667
+  },
+  "epsfixed01_sarsa": {
+    "schedule": "fixed 0.1",
+    "method": "sarsa",
+    "train_reached_last1000": 0.542,
+    "train_holds": 0,
+    "eval_reached": 46,
+    "eval_reached_per_seed": [
+      17,
+      17,
+      12
+    ],
+    "eval_success": 0,
+    "eval_duration_s": 7.722333333333334
+  }
+}

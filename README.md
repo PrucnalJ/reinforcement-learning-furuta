@@ -30,6 +30,9 @@ python -m pip install -r requirements.txt
 | `train.py` | Train one agent; saves Q table, visits, logs and config to an `.npz` |
 | `evaluate.py` | Frozen greedy evaluation on fixed seeds |
 | `make_figures.py` | Every report figure and table, from `results/final/` |
+| `exploration_study.py` | Evaluates the three epsilon schedules (report Section 8) |
+| `collect_experiments.py` | One-row-per-run summary of every training run in `experiments.csv` |
+| `report/build_report.py` | Builds the submission PDF from a Markdown export of the report |
 | `verify_env.py` | Required environment checks |
 | `play.py`, `watch.py`, `playground.py` | Play the task yourself, watch a trained agent, or tweak values live |
 
@@ -54,9 +57,22 @@ for s in 0 1 2; do
 done
 
 # longer budget (reported separately, not part of the comparison)
-python train.py --method qlearning --seed 0 --episodes 50000 --eps-decay-episodes 40000 --tag long50k --out results/final
+for m in qlearning sarsa; do
+  python train.py --method $m --seed 0 --episodes 50000 --eps-decay-episodes 40000 --tag long50k --out results/final
+  python train.py --method $m --seed 0 --episodes 50000 --eps-decay-episodes 40000 --phi-edges 0.5,1.5 --tag long50kcoarse --out results/final
+done
+python train.py --method sarsa --seed 1 --episodes 50000 --eps-decay-episodes 40000 --phi-edges 0.5,1.5 --tag long50kcoarse --out results/final
+
+# exploration study: two other epsilon schedules at the baseline settings
+for s in 0 1 2; do for m in qlearning sarsa; do
+  python train.py --method $m --seed $s --eps-start 0.1 --eps-end 0.1 --eps-decay-episodes 0 --tag epsfixed01 --out results/final
+  python train.py --method $m --seed $s --eps-decay-episodes 5000 --tag epsfast --out results/final
+done; done
 
 python make_figures.py          # writes figures/ and figures/summary.json
+python exploration_study.py     # exploration table, figures/exploration.json
+python collect_experiments.py   # experiments.csv: every run, including tuning runs
+python report/build_report.py report/report.md   # report PDF from a Markdown export
 ```
 
 Evaluation uses 20 greedy episodes per table from seeds 100000-100019, identical
@@ -68,7 +84,7 @@ The learned Q tables used in the report are committed in `results/final/`.
 
 ```bash
 python play.py                                              # you control the arm (arrow keys)
-python watch.py results/final/long50k_qlearning_seed0.npz   # watch a trained agent
+python watch.py results/final/long50kcoarse_qlearning_seed0.npz   # watch the best trained agent
 python playground.py                                        # sliders for alpha, gamma, epsilon, reward
 python train.py --method qlearning --episodes 3000 --live   # watch the agent while it trains
 ```

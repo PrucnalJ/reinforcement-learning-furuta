@@ -13,3 +13,4 @@ venv/
 
 # Scratch results (final tables are added explicitly)
 results/
+report/report.html
