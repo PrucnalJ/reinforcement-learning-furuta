@@ -1,6 +1,6 @@
 # COSC 527 Project A: Swing-Up and Balancing of a Furuta Pendulum with Tabular SARSA and Q-Learning
 
-@Prucnal-Sachdev and Rocco · Draft Oct 11, 2026
+@Prucnal-Sachdev and Rocco DeLuca · Oct 11, 2026
 
 **Summary.** Tabular SARSA and Q-learning learned to swing the pendulum up from the bottom, but holding it upright for five seconds required far more experience than reaching it. With 20,000 training episodes, no policy completed a five-second hold in evaluation; SARSA reached upright more often than Q-learning on all three seeds (18 versus 4 of 60 evaluation episodes). Our controlled comparison showed that coarser arm-angle bins learned about twice as fast as the finer bins we had expected to help, and a parameter study showed that our exploration schedule was too slow: with ε fixed at 0.1, SARSA reached upright in 46 of 60. With 50,000 episodes, three policies completed a five-second hold in 1 of 20 evaluation episodes, and the best reached upright in 17 of 20. Zero torque and random actions never reached upright.
 
@@ -10,7 +10,7 @@ The agent must swing a simulated Furuta pendulum up from hanging down and hold i
 
 The supplied simulator (`furuta_env.py`) integrates Gäfvert's (1998) nonlinear model with a fourth-order Runge–Kutta step at Ts = 0.01 s. Its parameters are not a calibrated QUBE-Servo 3 model, so every claim here is about the simulation. The continuous state is x = \[φ, φ̇, θ, θ̇\]: arm angle, arm angular velocity, pendulum angle, and pendulum angular velocity (rad, rad/s), with θ = 0 upright.
 
-**Verification (`verify_env.py`).** `reset()` returns the four-element state; actions 0, 1 and 2 apply −0.02, 0 and +0.02 N·m, matching `info` (action 3 is rejected); a zero-torque step from the reset state returns reward 0.9993 with both flags False. The supplied file ends an episode at |θ| > 20° or |φ| > π (terminated, reward −10) or after 2000 steps (truncated), and positive torque decreases θ̇. The agent chooses only A\_t; the environment returns S\_t+1, R\_t+1, the terminated and truncated flags and `info`. Because the supplied task is balancing near upright, we wrapped it for swing-up (Section 2) without changing its dynamics or integrator.
+**Verification (`verify_env.py`).** `reset()` returns the four-element state; actions 0, 1 and 2 apply −0.02, 0 and +0.02 N·m, matching `info` (action 3 is rejected); a zero-torque step from the reset state returns reward 0.9993 with both flags False. The supplied file ends an episode at |θ| > 20° or |φ| > π (terminated, reward −10) or after 2000 steps (truncated), and positive torque decreases θ̇. The agent chooses only A\_t; the environment returns S\_t+1, R\_t+1, the terminated and truncated flags and `info`. Because the supplied task is balancing near upright, we wrapped it for swing-up (Section 2) without changing its dynamics or integrator; the instructor approved changing the start and termination conditions (email, October 9, 2026).
 
 ## 2. MDP formulation
 
@@ -111,10 +111,6 @@ Changing only the arm-angle bins from 10 (baseline) to 6 roughly doubled how oft
 
 **Why this choice.** Replays during tuning showed that every unsafe termination was the arm passing ±180° while the agent pumped the swing. With edges at ±0.5 and ±1.5 rad, one bin spanned 86°–180°, so the agent could not tell a safe arm position from an imminent crash. We hypothesized that adding edges at ±2.2 and ±2.7 rad (10 bins) would let it learn to avoid the stop, and made that the baseline. The comparison runs use the original edges; every other setting, the 20,000-episode budget and the seeds (0–2) are identical.
 
-&#91;image: Fraction of training episodes reaching upright, coarse versus fine arm bins, for Q-learning and SARSA\]
-
-*Figure 4. Fraction of training episodes reaching upright (500-episode moving average, mean of 3 seeds, min–max band). Red: 6 arm bins; blue: 10 arm bins (baseline).*
-
 |  | Q-learning, 10 bins | Q-learning, 6 bins | SARSA, 10 bins | SARSA, 6 bins |
 | --- | --- | --- | --- | --- |
 | Reached upright, last 1000 training episodes | 23% | 51% | 29% | 55% |
@@ -151,25 +147,27 @@ Training is the share of the last 1000 episodes that reached upright; evaluation
 
 Both alternatives beat our baseline schedule for both methods. The baseline acts mostly at random for its first 10,000 episodes (ε > 0.35), and random pushing mostly drives the arm into its stop, so much of that experience is about crashing; with Q starting at 0 and almost every reward negative, untried actions keep getting tried even when ε is small. SARSA gained most from a fixed ε = 0.1 (46 of 60, more than the coarse grid's 41), likely because a constant ε keeps the ε-greedy policy it evaluates from changing under it. Seeds disagree widely (11, 17 and 1 of 20 for Q-learning with the fast schedule), so this ranking is rough. We found it after fixing the baseline; a faster or fixed ε is the first change we would make next.
 
+&#91;image: Four before-and-after bar pairs: decision period 0.01 to 0.05 s took the share of runs reaching upright from 4% to 19%; crash penalty −100 to −1000 took seconds before crashing from 6.7 to 12.8; arm bins 10 to 6 took SARSA from 18 to 41 of 60 evaluation episodes reaching upright; exploration slow decay to fixed 0.1 took SARSA from 18 to 46 of 60\]
+
+*Figure 4. Each change on its own, before (gray) and after (blue): decision period, crash penalty, arm bins and exploration schedule. Evaluation counts are over 60 episodes (3 seeds × 20).*
+
 ## 9. Conceptual questions
 
-*Draft answers: the brief asks for these in your own words, so rewrite each one before submitting.*
+**(a) Why is the agent model-free?** It only learns by trying moves and seeing what happens. Every update uses just what `env.step()` handed back: the four numbers it saw, the move it made, the points it got, and the four numbers it saw next. It never looks at the physics equations and never predicts what a move it did not try would have done. The simulator has a model; our agent does not use it (Lecture 1, slide 30). The hand-written rules in Section 10 were only checks, not part of either agent.
 
-**(a) Why is the agent model-free?** It learns only from sampled transitions (S\_t, A\_t, R\_t+1, S\_t+1) returned by `env.step()`. It never calls the dynamics function, never predicts what an untried action would do, and never plans over the equations. The simulator has a model, but the agent does not use it (Lecture 1, slide 30). The hand-written feasibility rules in Section 10 were checks, not part of either agent.
+**(b) Target policies.** SARSA's target policy is the ε-greedy policy it is actually following: its target uses Q(S\_t+1, A\_t+1) for the move it is about to make, random or not. Q-learning's target policy is the greedy policy: its target uses max\_a Q(S\_t+1, a), the best move, whatever it actually does next. The two targets differ whenever the next move is not the greedy one (Lecture 5 example: 1.8 versus 2.7). The short version: SARSA plans around its own mistakes, Q-learning assumes it will not make any. In our runs that made SARSA play safer near the arm limit (6.0 versus 1.3 of 20 reached upright, 8.2 s versus 5.9 s survived) while random moves were still common, and made Q-learning the best agent at 50,000 episodes, once the random moves were nearly gone and its plan was the one actually being played.
 
-**(b) Target policies.** SARSA's target policy is the ε-greedy policy it follows: its target uses Q(S\_t+1, A\_t+1) for the action it will actually execute, exploration included. Q-learning's target policy is the greedy policy: its target uses max\_a Q(S\_t+1, a), whatever the behavior policy does next. The targets differ whenever the next action is not greedy, as in the Lecture 5 example (1.8 versus 2.7). In our runs SARSA was more careful near the arm stop: it reached upright more often (6.0 versus 1.3 of 20) and survived longer (8.2 s versus 5.9 s).
-
-**(c) Which states were visited most?** Updates concentrated near the bottom of the swing: the two pendulum-angle bins beyond ±135° received about 71% of all updates, while the six bins within ±20° received 0.9% (1.2% for SARSA, 2.1% in the 50,000-episode run). Only 51% of the 25,200 entries were updated at all and 33% at least ten times; the most-updated 1% of entries took 38% of all updates. Most of the table describes states the agent rarely reaches, and the states that matter for balancing are the least practiced.
+**(c) Which states were visited most?** Almost all the practice happened at the bottom of the swing: the two pendulum-angle bins beyond ±135° got about 71% of all updates, while the six bins within ±20°, where balancing is learned, got 0.9% (1.2% for SARSA, 2.1% in the 50,000-episode run). Only 51% of the 25,200 entries were ever updated and 33% at least ten times; the most-updated 1% of entries took 38% of all updates. So most of the table describes spots the agent rarely reaches, and the spots that matter most for the task are the least practiced. That is also why we would not add bins near upright: it would split those few visits further.
 
 &#91;image: Share of all Q updates by bin for each state variable, baseline Q-learning seed 0\]
 
 *Figure 5. Share of all Q-table updates falling in each bin of each state variable (baseline Q-learning, seed 0).*
 
-**(d) Did a larger training return mean a better policy?** No. With the −100 crash penalty, Q-learning's return rose from −1033 to −669 while every episode still crashed, because shorter episodes collect fewer negative rewards (Section 10). Training return also mixes exploration and a changing table, so we judged policies only by frozen greedy evaluation.
+**(d) Did a larger training return mean a better policy?** No. With the −100 crash penalty, Q-learning's training return rose from −1033 to −669 while every episode still crashed. The score went up because the episodes got shorter: crashing early collected fewer negative per-step rewards than hanging at the bottom. Training return also mixes in random moves and a table that is still changing, so we judged policies only by frozen greedy evaluation (Section 10).
 
-**(e) How does the reward encourage swing-up and balancing?** cos θ̃ rises smoothly from −1 hanging down to +1 upright, so every gain in height is rewarded during swing-up, and the reward peaks exactly where balancing happens. The −0.05φ² term keeps the arm near center, the torque term is small, the +100 bonus marks the 5 s hold, and the −1000 penalty makes crashing clearly worse than the discounted cost of staying down, about −500 with γ = 0.99 per decision (at −100 it was not, which produced the crash-on-purpose behavior).
+**(e) How does the reward encourage swing-up and balancing?** Every step the agent gets the pendulum's height, cos θ̃, which runs from −1 hanging down to +1 upright. So every bit of extra swing earns points during swing-up, and the most points are exactly where balancing happens. The −0.05φ² term keeps the arm near center and the −u² term is tiny, so height is what matters. The +100 bonus marks the 5 s hold. The crash penalty is −1000 because staying at the bottom costs about −500 over the horizon the agent sees (γ = 0.99 per decision); −100 was cheaper than that, which is why the agent crashed on purpose, and −1000 is clearly worse. −5000 added nothing.
 
-**(f) A limitation for the physical QUBE-Servo 3.** The model omits friction: Gäfvert (1998) notes significant friction in the arm joint (Coulomb about 0.01 N·m and stiction about 0.015 N·m), comparable to our entire 0.02 N·m torque. A policy tuned to a frictionless arm would push far less effectively on hardware. The parameters are also not calibrated to the QUBE, and the real system adds sensor noise and motor delay.
+**(f) A limitation for the physical QUBE-Servo 3.** The model has no friction. Gäfvert (1998) reports arm-joint friction of about 0.01 N·m Coulomb and 0.015 N·m stiction, about half of our entire 0.02 N·m push. A policy that learned to pump a frictionless arm would push far less effectively on hardware, so it would not just transfer over. The parameters are also not calibrated to the QUBE, and the real system adds sensor noise and motor delay.
 
 ## 10. Limitations and lessons learned
 
@@ -190,7 +188,7 @@ These limits motivate function approximation (Lecture 6): features such as sin �
 
 ## 11. Reproducibility
 
-Code: [github.com/PrucnalJ/reinforcement-learning-furuta](https://github.com/PrucnalJ/reinforcement-learning-furuta) (Python 3.12, NumPy, Matplotlib). The code's defaults are the baseline configuration; the README lists the command for every run in this report (all seeds, the 50,000-episode runs and the Section 8 study).
+Code: [github.com/PrucnalJ/reinforcement-learning-furuta](https://github.com/PrucnalJ/reinforcement-learning-furuta) (Python 3.12, NumPy, Matplotlib). The code's defaults are the baseline configuration; the README lists the command for every run in this report. Training seeds are 0, 1 and 2; evaluation seeds are 100000–100019; the saved \`.npz\` files in \`results/final/\` hold every Q table, visit count, log and configuration.
 
 ```
 pip install -r requirements.txt
@@ -201,25 +199,26 @@ python make_figures.py                         # figures and tables, Sections 5-
 python watch.py results/final/long50kcoarse_qlearning_seed0.npz   # demo
 ```
 
-Training seeds are 0, 1 and 2, shared by the environment and the agent's exploration; evaluation seeds are 100000–100019. The `.npz` files committed in `results/final/` hold each run's Q table, visit counts, per-episode logs and full configuration.
-
 ## Appendix A. Use of generative AI
 
-We used Claude (Anthropic), through Claude Code, as a coding and writing assistant. *Edit this appendix so it describes your own use accurately; it is required by the brief.*
+We used Claude (Anthropic), through Claude Code, as permitted by the course policy.
 
 **Representative prompts.**
 
-- "Take a look at what's in the folder" and "take a look at all the PDFs" (summarize the brief, starter code, Gäfvert report and Lectures 1–6).
-- "Help guide us through this ... where should we start?" and "give me a run down of the need to knows in baby terms."
-- "Make a visual so I can see it" and "make a separate file I can run to mess with the values" (the game, viewer and playground).
-- "Explain what everything means" (reading the first training log).
+- "Explain in depth how gamma, epsilon and alpha work, and what happens when each one is set too high or too low."
+- "How do the bins work, and why does the number of bins change how fast the agent learns?"
+- "Why does deciding every 0.05 s instead of every 0.01 s work better with gamma? Why is the crash penalty −1000 and not −800?"
+- "Explain the update rule in plain terms. Why does the agent look at the next state instead of just the reward it got?"
+- "What is the difference between SARSA and Q-learning, and why did SARSA do better at 20,000 episodes but not at 50,000?"
+- "Go through the conceptual questions with us one at a time so we can check our own understanding before answering."
+- "Run the exploration-schedule comparison and add a parameter study table to the report."
 
-**How the responses influenced the work.** The assistant proposed the project structure, wrote the code (`swingup_env.py`, `discretize.py`, `agents.py`, `train.py`, `evaluate.py`, the plotting and visualization scripts), ran the tuning experiments, and drafted this report. We required the agents to follow the Lecture 5 pseudocode and checked them against the slides' worked numbers (1.16 and 1.34).
+**How the responses influenced the work.** The assistant wrote most of the code at our direction: the swing-up wrapper (`swingup_env.py`), the fast copy of the simulator, the discretizer, the SARSA and Q-learning agents, the training, evaluation and plotting scripts, and the viewer and playground tools. It ran the training and evaluation runs we asked for, helped us find trends in the results, and drafted this report and the presentation script, which we reviewed and rewrote in our own words. We used it heavily to learn the concepts: what each setting does, how the bins trade detail for practice, and why the update looks at the next state. For Homework 2, we each built a version independently: Jacek the full swing-up version, Rocco a balance-only version that starts upright with a 324-state table, which gave us two different views of the same problem.
 
 **Suggestions verified, corrected or rejected.**
 
-- **Corrected: the crash penalty.** The assistant first set the unsafe penalty to −100. Our first training run showed the agent learning to crash on purpose (Section 10), and the penalty was raised to −1000.
-- **Rejected: two later suggestions.** An even larger penalty (−5000) did not help. The assistant then proposed finer arm bins to let the agent see the arm limit coming and made them the baseline; our controlled comparison refuted this, since the coarse bins learned about twice as fast (Section 7).
-- **Verified:** the fast simulator against the supplied one (difference 0.0), the fast discretizer against the supplied helper, and the ε-greedy probabilities against Lecture 5 slide 28.
+- **Corrected: the crash penalty.** The assistant first set it to −100. Our first run showed the agent crashing on purpose (Section 10), and we raised it to −1000.
+- **Rejected: finer arm bins.** The assistant proposed adding arm-angle bins near the limit so the agent could see a crash coming, and made them the baseline. Our controlled comparison refuted it: the coarser bins learned about twice as fast (Section 7). A −5000 penalty was also tried and rejected.
+- **Verified:** the fast simulator against the supplied one (difference 0.0), the fast discretizer against the supplied `discretize_state` helper on 20,000 random states, the ε-greedy probabilities against Lecture 5 slide 28, and the update targets against the Lecture 5 worked numbers (1.16 and 1.34).
 
-**Portions with AI assistance.** Most of the source code, the experiment design, the figures and the first draft of this report. *List here which parts you wrote, rewrote or changed yourselves, including your own answers to the conceptual questions.*
+**Portions with AI assistance.** Most of the source code, the experiment runs, the figures, and the first drafts of this report and the presentation. **What we did ourselves:** chose what to test and what to keep, ran the scripts and checked the outputs against the report, got the instructor's approval for changing the start and termination conditions (Rocco), built a slider playground to see by hand what ε, γ and α do (Jacek), designed the bin reasoning and the independent balance-only Homework 2 version (Rocco), and wrote Section 9 and the presentation in our own words.
