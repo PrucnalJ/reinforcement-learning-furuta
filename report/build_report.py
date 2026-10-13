@@ -23,8 +23,8 @@ FIGS = HERE.parent / "figures"
 # Placeholders appear in this order in the report.
 FIGURES = ["fig_training.png", "fig_eval_success.png", "fig_eval_traces.png",
            "fig_simple_changes.png", "fig_visits.png"]
-WIDTH = {"fig_training.png": "42%", "fig_eval_success.png": "46%",
-         "fig_eval_traces.png": "44%", "fig_simple_changes.png": "66%", "fig_visits.png": "50%"}
+WIDTH = {"fig_training.png": "38%", "fig_eval_success.png": "46%",
+         "fig_eval_traces.png": "44%", "fig_simple_changes.png": "66%", "fig_visits.png": "44%"}
 EQUATIONS = {
     "SARSA": "SARSA: &nbsp; Q(S<sub>t</sub>,A<sub>t</sub>) &larr; Q(S<sub>t</sub>,A<sub>t</sub>) + "
              "&alpha;[R<sub>t+1</sub> + &gamma; Q(S<sub>t+1</sub>,A<sub>t+1</sub>) &minus; Q(S<sub>t</sub>,A<sub>t</sub>)]",
@@ -40,7 +40,7 @@ body { font-family: 'Times New Roman', Times, serif; font-size: 10.5pt; line-hei
        color: #000; margin: 0; }
 h1 { font-size: 15.5pt; text-align: center; margin: 0 0 4pt; line-height: 1.2; }
 .byline { text-align: center; margin: 0 0 10pt; }
-h2 { font-size: 12pt; margin: 11pt 0 3pt; break-after: avoid; }
+h2 { font-size: 12pt; margin: 9pt 0 3pt; break-after: avoid; }
 p { margin: 0 0 3pt; text-align: justify; }
 ul, ol { margin: 0 0 5pt; padding-left: 18pt; } li { margin: 0 0 2pt; }
 table { border-collapse: collapse; margin: 4pt auto 6pt; font-size: 9pt; }
@@ -49,7 +49,7 @@ th, td { border-top: 0.5pt solid #444; border-bottom: 0.5pt solid #444; padding:
          text-align: left; vertical-align: top; }
 th { font-weight: bold; }
 code { font-family: Consolas, monospace; font-size: 9pt; }
-pre { font-size: 8pt; background: #f4f4f4; padding: 4pt 6pt; margin: 3pt 0 6pt;
+pre { font-size: 7.5pt; background: #f4f4f4; padding: 3pt 6pt; margin: 2pt 0 4pt; line-height: 1.1;
       white-space: pre-wrap; break-inside: avoid; }
 .eq { text-align: center; margin: 3pt 0; }
 figure { margin: 4pt 0 6pt; text-align: center; break-inside: avoid; }
